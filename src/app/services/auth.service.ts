@@ -8,7 +8,7 @@ import { tap } from 'rxjs/operators';
 })
 export class AuthService {
   // 1. Cambiamos la URL para que apunte a la base de Auth, no solo a Google
-  private apiUrl = 'https://localhost:7277/api/auth'; 
+  private apiUrl = 'https://localhost:7159/api/auth'; 
 
   constructor(private http: HttpClient, private router: Router) { }
 
