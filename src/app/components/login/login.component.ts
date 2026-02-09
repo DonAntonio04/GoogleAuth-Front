@@ -11,7 +11,6 @@ declare var google: any;
 })
 export class LoginComponent implements OnInit {
 
-  // 1. 👇 AQUÍ ESTÁN LAS VARIABLES QUE TE FALTABAN
   email: string = '';
   pass: string = '';
 
@@ -29,7 +28,7 @@ export class LoginComponent implements OnInit {
     this.waitForGoogle();
   }
 
-  // --- LÓGICA DE GOOGLE ---
+  // logica con google 
   waitForGoogle() {
     const interval = setInterval(() => {
       if (typeof google !== 'undefined' && google.accounts) {
@@ -50,7 +49,7 @@ export class LoginComponent implements OnInit {
       google.accounts.id.renderButton(parent, {
         theme: 'outline',
         size: 'large',
-        width: 300  // Valor en píxeles (Google no acepta porcentajes)
+        width: 300 
       });
     }
   }
@@ -64,7 +63,6 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  // --- 2. 👇 AQUÍ ESTÁN LAS FUNCIONES QUE TE FALTABAN ---
 
   onLoginLocal() {
     if (!this.email || !this.pass) {
