@@ -28,7 +28,6 @@ export class LoginComponent implements OnInit {
     this.waitForGoogle();
   }
 
-  // logica con google 
   waitForGoogle() {
     const interval = setInterval(() => {
       if (typeof google !== 'undefined' && google.accounts) {
@@ -40,7 +39,7 @@ export class LoginComponent implements OnInit {
 
   initGoogleButton() {
     google.accounts.id.initialize({
-      client_id: '71333420449-5dkid1qm5c17pc1r45i30lvvf9mh7rsb.apps.googleusercontent.com', // Tu ID
+      client_id: '71333420449-5dkid1qm5c17pc1r45i30lvvf9mh7rsb.apps.googleusercontent.com',
       callback: (resp: any) => this.handleGoogle(resp)
     });
 
@@ -57,12 +56,22 @@ export class LoginComponent implements OnInit {
   handleGoogle(response: any) {
     if (response.credential) {
       this.authService.loginWithGoogle(response.credential).subscribe({
-        next: () => this.ngZone.run(() => this.router.navigate(['/home'])),
-        error: (err) => alert("Error al iniciar sesión con Google")
+        next: () => {
+          this.ngZone.run(() => this.router.navigate(['/home']));
+        },
+        error: (err: any) => {
+          // --- CAMBIO IMPORTANTE: MANEJO DE ERROR 401 ---
+          if (err.status === 401) {
+            alert("No tienes cuenta registrada con este Google. Por favor, regístrate primero.");
+            this.ngZone.run(() => this.router.navigate(['/register']));
+          } else {
+            console.error(err);
+            alert("Error al iniciar sesión. Intenta nuevamente.");
+          }
+        }
       });
     }
   }
-
 
   onLoginLocal() {
     if (!this.email || !this.pass) {
@@ -74,7 +83,7 @@ export class LoginComponent implements OnInit {
       next: () => {
         this.router.navigate(['/home']);
       },
-      error: (err) => {
+      error: (err: any) => {
         alert("Credenciales incorrectas o usuario no registrado");
       }
     });

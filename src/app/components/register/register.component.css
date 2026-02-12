@@ -22,6 +22,7 @@
 .title {
   color: #333;
   margin-bottom: 0.5rem;
+  margin-top: 0;
 }
 
 .subtitle {
@@ -29,6 +30,35 @@
   font-size: 0.9rem;
   margin-bottom: 1.5rem;
 }
+
+/* --- ESTILOS EXTRA PARA GOOGLE Y DIVIDER --- */
+.google-btn-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  min-height: 40px; /* Evita saltos de layout al cargar */
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.divider span {
+  padding: 0 10px;
+}
+/* ------------------------------------------- */
 
 /* Inputs */
 .input-group {
@@ -41,7 +71,7 @@ input {
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
-  box-sizing: border-box; /* Importante para que el padding no rompa el ancho */
+  box-sizing: border-box;
   font-size: 14px;
   transition: border-color 0.3s;
 }
@@ -61,7 +91,7 @@ input:focus {
 .btn-register {
   width: 100%;
   padding: 12px;
-  background-color: #28a745; /* Verde */
+  background-color: #28a745;
   color: white;
   border: none;
   border-radius: 6px;
