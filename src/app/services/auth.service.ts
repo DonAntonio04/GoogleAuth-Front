@@ -15,14 +15,14 @@ export class AuthService {
 
   // --- LOGIN CON GOOGLE ---
   loginWithGoogle(idToken: string) {
-    return this.http.post<any>(`${this.apiUrl}/google-login`, { idToken }).pipe(
+    return this.http.post<any>(`${this.apiUrl}/google-auth`, { idToken }).pipe(
       tap(response => this.guardarSesion(response))
     );
   }
 
   // --- REGISTRO CON GOOGLE (ESTE FALTABA) ---
   registerWithGoogle(idToken: string) {
-    return this.http.post<any>(`${this.apiUrl}/google-register`, { idToken }).pipe(
+    return this.http.post<any>(`${this.apiUrl}/google-auth`, { idToken }).pipe(
       tap(response => this.guardarSesion(response))
     );
   }
@@ -72,16 +72,21 @@ export class AuthService {
     return data ? JSON.parse(data) : null;
   }
 
-  private guardarSesion(response: any) {
-    if (response.token) {
-        localStorage.setItem('token', response.token);
+ private guardarSesion(response: any) {
+    const token = response.token || response.Token;
+    if (token) {
+        localStorage.setItem('token', token);
     }
-    const userName = response.userName || response.nombre || response.email;
-    if (userName || response.email) {
+
+  
+    const userName = response.user?.nombre || response.userName || response.UserName;
+    const email = response.user?.email || response.email || response.Email;
+
+    if (userName || email) {
         localStorage.setItem('user', JSON.stringify({ 
             name: userName, 
-            email: response.email 
+            email: email
         }));
     }
-  }
+ }
 }
