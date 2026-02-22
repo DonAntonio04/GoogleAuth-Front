@@ -12,85 +12,97 @@ declare var google: any;
 export class RegisterComponent implements OnInit {
 
   userObj = {
-    nombre: '',
+    nombre:   '',
     apellido: '',
-    email: '',
+    email:    '',
     telefono: '',
     password: ''
   };
 
+  private readonly CLIENT_ID = '71333420449-5dkid1qm5c17pc1r45i30lvvf9mh7rsb.apps.googleusercontent.com';
+  private readonly SCOPES = [
+    'openid',
+    'email',
+    'profile',
+    'https://www.googleapis.com/auth/user.phonenumbers.read',
+    'https://www.googleapis.com/auth/user.birthday.read'
+  ].join(' ');
+
   constructor(
-    private authService: AuthService, 
+    private authService: AuthService,
     private router: Router,
     private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
-    this.initGoogleButton();
+    this.waitForGoogle();
   }
 
-  initGoogleButton() {
-    // Esperamos a que google esté definido
+  waitForGoogle() {
     const interval = setInterval(() => {
       if (typeof google !== 'undefined' && google.accounts) {
         clearInterval(interval);
-        
-        google.accounts.id.initialize({
-          client_id: '71333420449-5dkid1qm5c17pc1r45i30lvvf9mh7rsb.apps.googleusercontent.com',
-          callback: (resp: any) => this.handleGoogleRegister(resp)
-        });
-  
-        const parent = document.getElementById("google-reg-btn");
-        if (parent) {
-          google.accounts.id.renderButton(parent, {
-            theme: 'outline',
-            size: 'large',
-            width: 300,
-            text: 'signup_with' // Cambia el texto del botón a "Sign up with Google"
-          });
-        }
+        this.initGoogleButton();
       }
     }, 100);
   }
 
-  handleGoogleRegister(response: any) {
-    if (response.credential) {
-      this.authService.registerWithGoogle(response.credential).subscribe({
-        next: (res) => {
-          this.ngZone.run(() => {
-            alert("¡Registro con Google exitoso!");
-            this.router.navigate(['/login']); 
-          });
+  initGoogleButton() {
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: this.CLIENT_ID,
+    scope: this.SCOPES,
+    prompt: 'consent',  // fuerza mostrar pantalla de permisos
+    callback: (tokenResponse: any) => this.handleGoogleRegister(tokenResponse)
+  });
+
+  const btn = document.getElementById('google-reg-btn');
+  if (btn) {
+    btn.addEventListener('click', () => client.requestAccessToken());
+  }
+}
+  handleGoogleRegister(tokenResponse: any) {
+    if (!tokenResponse || !tokenResponse.access_token) {
+      alert('No se pudo obtener el token de Google.');
+      return;
+    }
+
+    this.ngZone.run(() => {
+      this.authService.registerWithGoogle(tokenResponse.access_token).subscribe({
+        next: () => {
+          alert('¡Registro con Google exitoso!');
+          this.router.navigate(['/login']);
         },
         error: (err: any) => {
-          console.error(err);
-          // Si el usuario ya existe (según tu backend podría ser 400)
-          if (err.error && err.error.Error) {
-             alert(err.error.Error); 
+          const msg = err.error?.Error || '';
+          if (err.status === 400 && msg === 'El correo ya existe.') {
+            alert('Este correo ya está registrado. Por favor inicia sesión.');
+            this.router.navigate(['/login']);
           } else {
-             alert("Error al registrarse con Google.");
+            alert('Error al registrarse con Google: ' + (msg || 'Intenta de nuevo.'));
           }
         }
       });
-    }
+    });
   }
 
-  // --- LÓGICA LOCAL ---
   onRegister() {
     if (!this.userObj.nombre || !this.userObj.email || !this.userObj.password) {
-      alert("Por favor completa los campos obligatorios (*)");
+      alert('Por favor completa los campos obligatorios (*)');
       return;
     }
 
     this.authService.register(this.userObj).subscribe({
-      next: (res) => {
-        alert("¡Registro exitoso! Inicia sesión.");
+      next: () => {
+        alert('¡Registro exitoso! Inicia sesión.');
         this.router.navigate(['/login']);
       },
       error: (err: any) => {
-        // Manejo seguro del mensaje de error
-        const msg = err.error?.Error || "No se pudo registrar";
-        alert("Error: " + msg);
+        const msg = err.error?.Error || '';
+        if (err.status === 400 && msg === 'El correo ya existe.') {
+          alert('Este correo ya está registrado. Por favor inicia sesión.');
+        } else {
+          alert('Error: ' + (msg || 'No se pudo registrar'));
+        }
       }
     });
   }
